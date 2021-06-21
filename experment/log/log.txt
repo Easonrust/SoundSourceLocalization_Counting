@@ -1,0 +1,2 @@
+voiceseg:  {0: {'start': 105, 'end': 164, 'duration': 60}, 1: {'start': 172, 'end': 209, 'duration': 38}}
+0.7557558871951122
