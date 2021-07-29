@@ -61,8 +61,8 @@ def record_server(rawDataQueue, httpRawDataQueue, host, port):
                 list3 = list(tmp)
                 rawDataQueue.put(np.array([list0, list1, list2, list3]))
                 httpRawDataQueue.put(json.dumps(
-                    [{"id": 1, "data": [list0, list1, list2, list3]}]))
-                if httpRawDataQueue.qsize() > 20:
+                    [{"id": 1, "data": [list0[::2], list1[::2]]}]))
+                if httpRawDataQueue.qsize() > 1:
                     httpRawDataQueue.get()
                 # print(httpRawDataQueue.get())
                 count = count + 1
@@ -72,6 +72,8 @@ def record_server(rawDataQueue, httpRawDataQueue, host, port):
 
 
 async def result_handle(request: web.Request) -> web.StreamResponse:
+    if centerQueue.qsize() == 0:
+        return web.Response(text=json.dumps([{"id": 0, "center": "there is not center current!"}]))
     while(centerQueue.qsize() > 1):
         centerQueue.get()
     res = centerQueue.get()
@@ -135,4 +137,4 @@ if __name__ == '__main__':
          web.get("/getRawData", raw_data_handle)]
     )
 
-    web.run_app(app)
+    web.run_app(app, host='192.168.1.13', port=8080)

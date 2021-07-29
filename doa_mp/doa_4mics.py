@@ -26,7 +26,7 @@ def gcc_in_range(frame_s1, frame_s2, fs, MAX_TDOA):
         sig = frame_s1[i, :]
         ref = frame_s2[i, :]
 
-        tau, _, peaks_num = gcc_phat(sig,
+        tau, _, peaks_num = gcc_phat(sig ,
                                      ref,
                                      fs=fs,
                                      max_tau=MAX_TDOA,)
@@ -85,8 +85,7 @@ def preprocess(x, fs, sQueue, frameQueue, nQueue, preprocessedDataQueue):
             frame_s3_ = frame_s3[voice_seg[i]['start']:voice_seg[i]['end']]
             frame_s4_ = frame_s4[voice_seg[i]['start']:voice_seg[i]['end']]
             frameQueue.put([frame_s1_, frame_s2_, frame_s3_, frame_s4_])
-            preprocessedDataQueue.put(
-                [frame_s1_, frame_s2_, frame_s3_, frame_s4_])
+            preprocessedDataQueue.put([frame_s1_, frame_s2_, frame_s3_, frame_s4_])
     # frameQueue.put([frame_s1, frame_s2, frame_s3, frame_s4])
     # print(x11)
     # print(x12)
@@ -169,7 +168,8 @@ def mp_postprocess(gccedDataQueue1, gccedDataQueue2, tauResultQueue1, tauResultQ
 
         tauResultQueue1.put(result1)
         tauResultQueue2.put(result2)
-        print("gccedDataQueue1: ", gccedDataQueue1.qsize())
+        # print("gccedDataQueue1: ", gccedDataQueue1.qsize())
+        print("tauResultQueue1: ", tauResultQueue1.qsize())
 
 
 def mp_gcc(mic_distance, fs, preprocessedDataQueue, gccedDataQueue1, gccedDataQueue2):
@@ -236,20 +236,12 @@ def calculate_center(fs, MAX_TDOA, tauResultQueue1, tauResultQueue2, frameNumQue
         source_num = np.max((len(tau_result1), len(tau_result2)))
 
         # 输出声源的个数
-        # print("source_num: ", source_num)
-        # print("len(tau_result1): ", len(tau_result1))
-        # print("len(tau_result2): ", len(tau_result2))
-        Location = []
+        print("source_num: ", source_num)
+        print("len(tau_result1): ", len(tau_result1))
+        print("len(tau_result2): ", len(tau_result2))
+
         if len(tau_result1) != len(tau_result2):
             print("cannot do the Location")
-        elif len(tau_result1) == 1:
-
-            # 单声源部分
-            theta1 = calculate_theta(tau_result1[0], MAX_TDOA)
-            theta2 = calculate_theta(tau_result2[0], MAX_TDOA)
-            x = 10*np.tan(theta1)/(np.tan(theta1)+np.tan(theta2))
-            y = 10/(np.tan(theta1)+np.tan(theta2))
-            Location.append((x, y))
         else:
             # n1 = n[0]
             # n2 = n[1]
@@ -263,6 +255,7 @@ def calculate_center(fs, MAX_TDOA, tauResultQueue1, tauResultQueue2, frameNumQue
 
             frame_num = frame_s1.shape[0]
 
+            Location = []
             P_result = []
 
             start = time.time()
@@ -307,8 +300,8 @@ def calculate_center(fs, MAX_TDOA, tauResultQueue1, tauResultQueue2, frameNumQue
                     theta1 = calculate_theta(tau_result1[i], MAX_TDOA)
                     theta2 = calculate_theta(
                         tau_result2[p_result[i]], MAX_TDOA)
-                    x = 10*np.tan(theta1)/(np.tan(theta1)+np.tan(theta2))
-                    y = 10/(np.tan(theta1)+np.tan(theta2))
+                    x = 3.97*np.tan(theta1)/(np.tan(theta1)+np.tan(theta2))
+                    y = 3.97/(np.tan(theta1)+np.tan(theta2))
 
                     Location.append((x, y))
 
@@ -325,8 +318,7 @@ def calculate_center(fs, MAX_TDOA, tauResultQueue1, tauResultQueue2, frameNumQue
             # print("time cost2: ", end-start, "s")
 
             # 输出最后确定的位置坐标
-            print("center: ", json.dumps(
-                [{"id": 0, "center": center.tolist()}]))
+            print("center: ", json.dumps([{"id": 0, "center": center.tolist()}]))
             centerQueue.put(center)
 
 
